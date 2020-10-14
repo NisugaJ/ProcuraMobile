@@ -25,6 +25,7 @@ export default class StocksScreen extends Component {
       criticalItems: [],
       isLoadingCritical: false,
       isLoadingNormal: false,
+      loggedUser:""
     };
     this.onPress = this.onPress.bind(this);
   }
@@ -33,12 +34,26 @@ export default class StocksScreen extends Component {
     // Alert.alert("Alert Title", "My Alert Msg " + txt);
     //load View percentage screen
 
-    this.props.navigation.navigate("ViewPercentageScreen", { itemObjId: txt });
+    this.props.navigation.navigate("ViewPercentageScreen", { itemObjId: txt, loggedUser:this.state.loggedUser });
   }
 
   componentDidMount() {
     this.setState({ isLoadingCritical: true });
     this.setState({ isLoadingNormal: true });
+   //this.setState({ loggedUser: this.props.route.params.loggedUser});
+
+    console.log(this.props);
+
+      if(this.props.route.params == undefined){
+        this.setState({loggedUser: "aaa"});
+      }else{
+        this.setState({
+          loggedUser: this.props.route.params.loggedUser
+         }, () => {
+         });
+      }
+      
+
 
     axios
       .get(constants.ipAddress + "/item/critical")

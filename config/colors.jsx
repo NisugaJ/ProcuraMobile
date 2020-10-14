@@ -9,4 +9,20 @@ export default {
   dark: "#0c0c0c",
   btnColor: "#009688",
   btnTextColor: "#ffffff",
+  // 
+
+  APPROVAL_PENDING_COLOR: "#fafcad",
+  APPROVED_COLOR: "#87ff95",
+  REJECTED_COLOR: "#ff8787",
+  IN_PROCESS_COLOR: "#33f8ff",
+  //
+  ORDER_PLACED_COLOR: "#b3adfc",
+  //
+  DELIVERED_COLOR: "#d233ff",
+  PARTIALLY_DELIVERED_COLOR: "#ff33c0",
+  // 
+  deleteBtnColor:"#f87070",
+  modifyBtnColor:"#70acf8",
+  placeOrderBtnColor:"#009688"
+  
 };

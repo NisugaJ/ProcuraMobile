@@ -33,13 +33,14 @@ export default class PlaceOrderScreen extends Component {
       itemName: "",
       supplierId:"",
       supplierLogo:"",
-      loggedInUser:"aaa",
+      loggedInUser:"a",
       options: {
         1: "Colombo",
         2: "Galle",
         3: "Kandy",
         4: "Anuradhapura",
         5: "Katharagama",
+        
       },
       selectedSite: "",
       //
@@ -56,7 +57,10 @@ export default class PlaceOrderScreen extends Component {
       total: 0,
       comment:"",
       itemCategory:"",
-      limitPrice:0
+      limitPrice:0,
+      loaggedUser:"",
+      // 
+      referenceID:""
     };
 
     this.showDatePicker = this.showDatePicker.bind(this);
@@ -69,6 +73,31 @@ export default class PlaceOrderScreen extends Component {
   }
 
   componentDidMount() {
+
+      this.setState({
+          loggedInUser:this.props.route.params.loggedUser
+      });
+
+    // load site locations - start
+    axios
+    .get(constants.ipAddress + "/location/all")
+    .then(
+      function (response) {
+
+         this.setState({ selectedSite: response.data[0]._id });
+      
+
+
+      }.bind(this)
+    )
+    .catch(
+      function (error) {
+        console.log("error occurred -" + error);
+      }.bind(this)
+    );
+
+    // load site locations - end
+
 
     //load critical value from db -start
     
@@ -157,6 +186,11 @@ axios
 
   handlePlaceOrderBtnClick(){
 
+    console.log("!!!");
+    console.log(this.state.itemCategory);
+    console.log(this.state.total +">="+ this.state.limitPrice);
+    console.log("!!!");  
+
     if(this.state.itemCategory == 'SPECIAL_APPROVAL' || this.state.total >= this.state.limitPrice){
       //Need approval
       axios
@@ -177,19 +211,29 @@ axios
       .then(
         function (response) {
 
-          if(this.state.itemCategory == 'SPECIAL_APPROVAL' && this.state.total < this.state.limitPrice ){
-            //need approval for special approval item
-            this.props.navigation.navigate("RequestOrOrderScreen",{type:"SPECIAL_APPROVAL_ONLY"});
-    
-          }else if(this.state.itemCategory != 'SPECIAL_APPROVAL' && this.state.total >= this.state.limitPrice ){
-            //need approval for price limit
-            this.props.navigation.navigate("RequestOrOrderScreen",{type:"LIMIT_PRICE_ONLY"});
-    
-          }else if(this.state.itemCategory == 'SPECIAL_APPROVAL' && this.state.total >= this.state.limitPrice ){
-            //need approval for price limit and special approval item
-            this.props.navigation.navigate("RequestOrOrderScreen",{type:"SPECIAL_APPROVAL_AND_LIMIT_PRICE_ONLY"});
-          }   
+          this.setState({ 
+              referenceID:response.data.ops[0]._id
+          }, () => {
+             
+            if(this.state.itemCategory == 'SPECIAL_APPROVAL' && this.state.total < this.state.limitPrice ){
+              //need approval for special approval item
+              this.props.navigation.navigate("RequestOrOrderScreen",{type:"SPECIAL_APPROVAL_ONLY",refId:this.state.referenceID});
+      
+            }else if(this.state.itemCategory != 'SPECIAL_APPROVAL' && this.state.total >= this.state.limitPrice ){
+              //need approval for price limit
+              this.props.navigation.navigate("RequestOrOrderScreen",{type:"LIMIT_PRICE_ONLY",refId:this.state.referenceID});
+      
+            }else if(this.state.itemCategory == 'SPECIAL_APPROVAL' && this.state.total >= this.state.limitPrice ){
+              //need approval for price limit and special approval item
+              this.props.navigation.navigate("RequestOrOrderScreen",{type:"SPECIAL_APPROVAL_AND_LIMIT_PRICE_ONLY",refId:this.state.referenceID});
+            }   
+  
 
+
+          });
+
+
+        
           // response.data[0]._id availableQty  category  itemName  maxQty  photoURL11  photoURL21  price  supplierId  weightPerItem
         }.bind(this)
       )
@@ -202,7 +246,7 @@ axios
 
     }else{
       //No need of approval - place order
-   
+      console.log("inside else block");
 
       axios
       .post(constants.ipAddress + "/requisition/register",{
@@ -222,8 +266,11 @@ axios
       .then(
         function (response) {
 
-          this.props.navigation.navigate("RequestOrOrderScreen",{type:"ORDERED"});
-          // response.data[0]._id availableQty  category  itemName  maxQty  photoURL11  photoURL21  price  supplierId  weightPerItem
+          this.setState({ 
+            referenceID:response.data.ops[0]._id
+        }, () => {
+          this.props.navigation.navigate("RequestOrOrderScreen",{type:"ORDERED", refId:this.state.referenceID} );
+        });
         }.bind(this)
       )
       .catch(
@@ -231,34 +278,7 @@ axios
           console.log("error occurred -" + error);
         }.bind(this)
       );
-
-
-
-
-
     }
-
-
-    
-    
-    
-    
-
-
-    console.log("&&&&");
-    console.log(this.state.loggedInUser);
-    console.log(this.state.itemObjId);
-    console.log(this.state.supplierId);
-    console.log(this.state.orderCount);
-    console.log(this.state.selectedNeedDate);
-    console.log(this.state.selectedSite);
-    console.log(this.state.total);
-    console.log(this.state.comment);
-    console.log(this.state.itemCategory);
-    console.log(this.state.limitPrice);
-    
-    console.log("&&&&");
-
 
   }
 
@@ -406,7 +426,7 @@ axios
               <View>
                 <View>
                   <NumericInput
-                    initValue={1}
+                    initValue={this.state.orderCount}
                     onChange={(value) => {
                       this.setState({ orderCount: value });
                       var temp = this.state.price * value;
@@ -452,15 +472,9 @@ axios
             onConfirm={this.handleConfirm}
             onCancel={this.hideDatePicker}
           />
-</View>
+        </View>
 
-
-
-
-        
-
-
-<AppText></AppText>
+        <AppText></AppText>
             <View style={styles.priorityContainer}>
                     <View style={{width:100, paddingLeft:10, paddingTop:15}}><AppText>Priority</AppText></View>
                     <View style={{backgroundColor:"#dddddd", borderRadius:30}}>

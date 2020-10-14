@@ -10,4 +10,7 @@ export default Object.freeze({
   ViewPercentageScreen: "ViewPercentageScreen",
   PlaceOrderScreen: "PlaceOrderScreen",
   RequestOrOrderScreen: "RequestOrOrderScreen",
+  OrderStatusFullScreen: "OrderStatusFullScreen",
+  ReceivedScreen:"ReceivedScreen",
+  DeliveredScreen:"DeliveredScreen",
 });
