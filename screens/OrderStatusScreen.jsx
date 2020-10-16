@@ -32,12 +32,8 @@ export default class OrderStatusScreen extends Component {
     }else if(status == "DELIVERED"){
       this.props.navigation.navigate("DeliveredScreen",{requisitionId:requisitionId, status:status});
     }else if(status == "PARTIALLY_DELIVERED"){
-
+      this.props.navigation.navigate("PartiallyDeliveredScreen",{requisitionId:requisitionId, status:status});
     }
-
-    
-    
-    
 
 
   }
@@ -57,12 +53,26 @@ export default class OrderStatusScreen extends Component {
             axios.get(constants.ipAddress + "/requisition/all")
             .then(
               function (response) {
-                  
+                
+                const filtered = response.data.reduce((a, o) => (
+                  (o.status=='APPROVAL_PENDING' || o.status=='APPROVED' || o.status== 'REJECTED' || o.status== 'IN_PROCESS' || 
+                  o.status== 'ORDER_PLACED' ||  o.status== 'DELIVERED' ||  o.status== 'PARTIALLY_DELIVERED' ) 
+                  && a.push(o), a), [])      
+                // console.log(filtered);
+
                 this.setState({
-                    requisitions: response.data 
-                }, () => {
-                  this.setState({isLoading:false});
-                });
+                  requisitions: filtered 
+              }, () => {
+                this.setState({isLoading:false});
+              });  
+
+                // this.setState({
+                //     requisitions: response.data 
+                // }, () => {
+                //   this.setState({isLoading:false});
+                // });
+
+
 
               }.bind(this)
             )
@@ -304,27 +314,30 @@ export default class OrderStatusScreen extends Component {
 
 
   componentDidMount(){
-    this.setState({isLoading:true});
 
-    axios
-    .get(constants.ipAddress + "/requisition/all")
-    .then(
-      function (response) {
+    this.onPress("ALL");
+
+    // this.setState({isLoading:true});
+
+    // axios
+    // .get(constants.ipAddress + "/requisition/all")
+    // .then(
+    //   function (response) {
            
-        this.setState({
-            requisitions: response.data
-        }, () => {
-          this.setState({isLoading:false});
-        });
+    //     this.setState({
+    //         requisitions: response.data
+    //     }, () => {
+    //       this.setState({isLoading:false});
+    //     });
 
-      }.bind(this)
-    )
-    .catch(
-      function (error) {
-        console.log("error occurred -" + error);
-        this.setState({isLoading:false});
-      }.bind(this)
-    );
+    //   }.bind(this)
+    // )
+    // .catch(
+    //   function (error) {
+    //     console.log("error occurred -" + error);
+    //     this.setState({isLoading:false});
+    //   }.bind(this)
+    // );
 
 
 
@@ -445,26 +458,29 @@ export default class OrderStatusScreen extends Component {
 
            {this.state.requisitions.map((item) =>
            
-            <TouchableOpacity onPress={() => this.onPressCard(item._id,item.status)}>
 
-            
-            <OrderStatusCard 
-            key={item._id}
-            itemId={item.itemId} 
-            RequisitionId={item._id} 
-            status={item.status} 
-            date={item.requiredDate} 
-            site={item.siteId} 
-            siteManager={item.siteManagerUsername} 
-            price={item.totalPrice} 
-            priority={item.priority} />
-            </TouchableOpacity>
-          
+          //  {(item.status=='APPROVAL_PENDING' || item.status=='APPROVED' || item.status=='REJECTED' || 
+          //     item.status=='IN_PROCESS' || item.status=='ORDER_PLACED' || item.status=='DELIVERED'|| 
+          //     item.status=='PARTIALLY_DELIVERED' ) && 
+              <View key={item._id}>
+                <TouchableOpacity key={item._id} onPress={() => this.onPressCard(item._id,item.status)}>
+                  <OrderStatusCard 
+                  key={item._id}
+                  itemId={item.itemId} 
+                  RequisitionId={item._id} 
+                  status={item.status} 
+                  date={item.requiredDate} 
+                  site={item.siteId} 
+                  siteManager={item.siteManagerUsername} 
+                  price={item.totalPrice} 
+                  priority={item.priority} />
+                  </TouchableOpacity>
+              </View>
+               
+          // }
+
           )}  
-
-
-      
-            
+   
           </ScrollView>
         </View>
       </Screen>
