@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, Alert } from 'react-native'
+import { Text, StyleSheet, View, Alert, Image } from 'react-native'
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import AppText from '../common/AppText';
 import StatusCommonCard from './StatusCommonCard';
@@ -16,7 +16,9 @@ export default class FullStatusCard extends Component {
             type:"",
             reqObj:{},
             loaded:false,
-            orderId:""
+            orderId:"",
+            loadingDelete:false,
+            approveloading:false
         };
     
     }
@@ -25,7 +27,7 @@ export default class FullStatusCard extends Component {
        
         this.setState({
             reqId:this.props.reqId, 
-            type:this.props.type
+            type:this.props.type,
         }, () => {
           this.setState({loaded:true});
 
@@ -65,17 +67,20 @@ export default class FullStatusCard extends Component {
     };
 
     onPressDelete = () => {
+      this.setState({loadingDelete:true});
 
         axios.delete(constants.ipAddress + "/requisition/id="+this.state.reqId)
         .then(
             function (response) {
-              Alert.alert("Requisition deleted successfully.");
+              this.setState({loadingDelete:false});
+              Alert.alert("Deleted successfully.");
               this.props.navigation.navigate("MainDashboardScreen");
               
             }.bind(this)
         )
         .catch(
             function (error) {
+              this.setState({loadingDelete:false});
             console.log("error occurred -" + error);
             this.setState({isLoading:false});
             }.bind(this)
@@ -86,12 +91,14 @@ export default class FullStatusCard extends Component {
 
       onPressPlace= () => {
 
+        this.setState({approveloading:true});
         //this.state.reqId
         // placeOrder endpoint
       
         axios.post(constants.ipAddress + "/requisition/placeApprovedOrder", {reqId:this.state.reqId})
         .then(
           function (response) {
+            this.setState({approveloading:false});
             console.log(response.data);
             this.props.navigation.navigate("MainDashboardScreen");
 
@@ -99,6 +106,7 @@ export default class FullStatusCard extends Component {
         )
         .catch(
           function (error) {
+            this.setState({approveloading:false});
             // alert("error occurred -" + error);
             console.log(error);
           }.bind(this)
@@ -160,6 +168,14 @@ export default class FullStatusCard extends Component {
                >
                  <Text style={styles.deleteButtonText}>Delete</Text>
                </TouchableOpacity>
+               <View style={{paddingTop:10}}>            
+                  {this.state.loadingDelete == true && 
+                        <Image
+                        source={require("../assets/loading/gear.gif")}
+                        style={{width:40, height:40,paddingTop:30}}
+                        />
+                  }
+              </View>
             </View>
                 
                
@@ -177,6 +193,15 @@ export default class FullStatusCard extends Component {
                >
                  <Text style={styles.placeOrderButtonText}>Place Order</Text>
                </TouchableOpacity>
+                <View style={{paddingTop:15}}>
+                    {this.state.approveloading == true && 
+                          <Image
+                          source={require("../assets/loading/gear.gif")}
+                          style={{width:40, height:40,paddingTop:30}}
+                          />
+                    }
+                </View>
+
             </View>
             }
 
@@ -189,12 +214,12 @@ export default class FullStatusCard extends Component {
                  <Text style={styles.deleteButtonText}>Delete</Text>
                </TouchableOpacity>
                 <AppText></AppText>
-               <TouchableOpacity
+               {/* <TouchableOpacity
                  onPress={this.onPressModify}
                  style={styles.modifyButtonContainer}
                >
                  <Text style={styles.modifyButtonText}>Modify</Text>
-               </TouchableOpacity>
+               </TouchableOpacity> */}
 
                 </View>
             }
@@ -286,6 +311,10 @@ const styles = StyleSheet.create({
       },
       BtnContainer:{
           padding:10,
-          alignItems:"center"
+          // alignItems:"center",
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+
       }
 })
